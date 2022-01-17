@@ -30,4 +30,22 @@ The following options are supported:
 
 ## Collaboration instructions
 
-TBA
+### Release a new version
+
+1. Bump version in `package.json`
+1. Push to `main` branch
+1. [ci workflow](.github/workflows/ci.yml) runs
+   1. A `tag` with the new version is added
+   1. A new [Github release](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases) is created
+
+You can add this new release to your app's dependencies in `package.json`, using the newly created `tag`:
+
+```json
+{
+  "dependencies": {
+    "react-native-encrypted-storage": "https://github.com/amsterdam-platform-creation/react-native-encrypted-storage.git#v4.1.2"
+  }
+}
+```
+
+> Note: The `lib/` directory contains the compiled library (results from running `yarn build`) and should not be changed directly.

@@ -1,0 +1,45 @@
+name: ci
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16
+
+      - name: Install dependencies
+        run: yarn
+
+      - name: Test
+        run: yarn test
+
+      - name: Check if version has been updated
+        id: check
+        uses: EndBug/version-check@v1
+
+      - name: Build
+        if: steps.check.outputs.changed == 'true'
+        run: yarn build
+
+      - name: Commit compiled lib
+        if: steps.check.outputs.changed == 'true'
+        run: |
+          git add lib/
+          git diff --staged --quiet || git commit -m "Bump lib to ${{ steps.check.outputs.version }}"
+          git push
+
+      - name: Release
+        if: steps.check.outputs.changed == 'true'
+        uses: softprops/action-gh-release@v1
