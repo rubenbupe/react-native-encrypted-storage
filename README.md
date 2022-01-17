@@ -35,8 +35,7 @@ The following options are supported:
 1. Bump version in `package.json`
 1. Push to `main` branch
 1. [ci workflow](.github/workflows/ci.yml) runs
-   1. A `tag` with the new version is added
-   1. A new [Github release](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases) is created
+1. A `tag` with the new version is added
 
 You can add this new release to your app's dependencies in `package.json`, using the newly created `tag`:
 
