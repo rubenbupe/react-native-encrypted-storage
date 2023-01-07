@@ -1,136 +1,41 @@
-# React Native Encrypted Storage
-React Native wrapper around SharedPreferences and Keychain to provide a secure alternative to [Async Storage](https://github.com/react-native-community/async-storage).
+# react-native-encrypted-storage
 
-## Why ?
+This is a fork of https://github.com/emeraldsanto/react-native-encrypted-storage/tree/4.0.2.
 
-[Async Storage](https://github.com/react-native-community/async-storage) is great but it lacks security. This is less than ideal when storing sensitive data such as access tokens, payment information and so on. This module aims to solve this problem by providing a wrapper around Android's `EncryptedSharedPreferences` and iOS' `Keychain`, complete with support for TypeScript.
+## What was changed
 
-## Version Requirements
+### Storage options
 
-- Android API 21+ (5.0)
-- iOS 2.0
-
-## Installation
-
-### Via `yarn`
-
-```bash
-$ yarn add react-native-encrypted-storage
-```
-
-### Via `npm`
-
-```bash
-$ npm install react-native-encrypted-storage
-```
-
-## Linking
-
-- React Native 0.60+
-
-Since version 0.60, React Native supports auto linking. This means no additional step is needed on your end.
-
-- React Native <= 0.59
-
-```bash
-$ react-native link react-native-encrypted-storage
-```
-
-Special note for iOS using `cocoapods`, run:
-
-```bash
-$ npx pod-install
-```
-
-## Usage
-
-This module exposes four (4) native functions to store, retrieve, remove and clear values. They can be used like so:
-
-### Import
+You can pass a set of **options** as the previous to last parameter of `setItem`, `getItem`, `removeItem` or `clear` functions:
 
 ```js
-import EncryptedStorage from 'react-native-encrypted-storage';
+await EncryptedStorage.removeItem('user_session', {
+  storageName: 'userStorage',
+});
 ```
 
-### Storing a value
+The following options are supported:
 
-```js
-async function storeUserSession() {
-    try {
-        await EncryptedStorage.setItem(
-            "user_session",
-            JSON.stringify({
-                age : 21,
-                token : "ACCESS_TOKEN",
-                username : "emeraldsanto",
-                languages : ["fr", "en", "de"]
-            })
-        );
+- `keychainAccessibility` (**iOS only**)
 
-        // Congrats! You've just stored your first value!
-    } catch (error) {
-        // There was an error on the native side
-    }
-}
-```
+  Control item availability relative to the lock state of the device. If the attribute ends with the string `ThisDeviceOnly`, the item can be restored to the same device that created a backup, but it isn’t migrated when restoring another device’s backup data. [Read more](https://developer.apple.com/documentation/security/keychain_services/keychain_items/restricting_keychain_item_accessibility?language=objc)
 
-### Retrieving a value
+  Default value: `kSecAttrAccessibleAfterFirstUnlock`
 
-```js
-async function retrieveUserSession() {
-    try {   
-        const session = await EncryptedStorage.getItem("user_session");
-    
-        if (session !== undefined) {
-            // Congrats! You've just retrieved your first value!
-        }
-    } catch (error) {
-        // There was an error on the native side
-    }
-}
-```
+- `storageName`
 
-### Removing a value
+  A string for identifying a set of storage items. Should not contain path separators. Uses [kSecAttrService](https://developer.apple.com/documentation/security/ksecattrservice?language=objc) on iOS and [fileName](https://developer.android.com/reference/kotlin/androidx/security/crypto/EncryptedSharedPreferences?hl=en#create) on Android.
 
-```js
-async function removeUserSession() {
-    try {
-        await EncryptedStorage.removeItem("user_session");
-        // Congrats! You've just removed your first value!
-    } catch (error) {
-        // There was an error on the native side
-    }
-}
-```
+  Default value: App's bundle id
 
-### Clearing all previously saved values
+## Collaboration instructions
 
-```js
-async function clearStorage() {
-    try {
-        await EncryptedStorage.clear();
-        // Congrats! You've just cleared the device storage!
-    } catch (error) {
-        // There was an error on the native side
-    }
-}
-```
+### Release a new version
 
-### Error handling
-
-Take the `removeItem` example, an error can occur when trying to remove a value which does not exist, or for any other reason. This module forwards the native iOS Security framework error codes to help with debugging.
-
-```js
-async function removeUserSession() {
-    try {
-        await EncryptedStorage.removeItem("user_session");
-    } catch (error) {
-        // There was an error on the native side
-        // You can find out more about this error by using the `error.code` property
-        console.log(error.code); // ex: -25300 (errSecItemNotFound)
-    }
-}
-```
+1. Bump version in `package.json`
+1. Push to `main` branch
+1. [ci workflow](.github/workflows/ci.yml) runs
+1. A `tag` with the new version is added
 
 ### Storage options
 
@@ -188,37 +93,12 @@ static void ClearKeychainIfNecessary() {
     }
 }
 
-@implementation AppDelegate
-
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
+```json
 {
-    // Add this line to call the above function
-    ClearKeychainIfNecessary();
-
-    RCTBridge *bridge = [[RCTBridge alloc] initWithDelegate:self launchOptions:launchOptions];
-    RCTRootView *rootView = [[RCTRootView alloc] initWithBridge:bridge moduleName:@"APP_NAME" initialProperties:nil];
-
-    rootView.backgroundColor = [UIColor colorWithRed:1.0f green:1.0f blue:1.0f alpha:1];
-
-    self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
-    UIViewController *rootViewController = [UIViewController new];
-    rootViewController.view = rootView;
-
-    self.window.rootViewController = rootViewController;
-    [self.window makeKeyAndVisible];
-
-    return YES;
+  "dependencies": {
+    "react-native-encrypted-storage": "https://github.com/amsterdam-platform-creation/react-native-encrypted-storage.git#v4.1.2"
+  }
 }
-
-// ...
-
-@end
 ```
 
-# Limitations
-
-There seems to be some confusion around the maximum size of items that can be stored, especially on iOS. According to this [StackOverflow question](https://stackoverflow.com/questions/13488793/is-there-any-length-limit-of-string-stored-in-keychain), the actual Keychain limit is much lower than what it should theoretically be. This does not affect Android as the `EncryptedSharedPreferences` API relies on the phone's storage, via XML files.
-
-## License
-
-MIT
+> Note: The `lib/` directory contains the compiled library (results from running `yarn build`) and should not be changed directly.
